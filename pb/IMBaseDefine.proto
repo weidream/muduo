@@ -2,7 +2,7 @@ syntax = "proto3";
 package IMBaseDefine;
 
 option java_package = "com.muduo.im.protobuf";
-option optimize_for = LITE_RUNTIME;
+//option optimize_for = LITE_RUNTIME;
 
 // service id
 enum ServiceID{

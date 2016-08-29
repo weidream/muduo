@@ -18,11 +18,9 @@ public:
   static MsgServerProc *instance();
   void onMessage(const muduo::net::TcpConnectionPtr &conn,
                  muduo::net::Buffer *buf, muduo::Timestamp receiveTime);
-  boost::shared_ptr<ProtobufDispatcher> getDispatcher() {
-    return dispatcherptr_;
-  };
+  ProtobufDispatcherPtr &getDispatcher() { return dispatcherptr_; }
 
-  boost::shared_ptr<ProtobufCodecPtr> getCodec() { return codecptr_; };
+  boost::shared_ptr<ProtobufCodec> getCodec() { return codecptr_; }
 
   void send(const muduo::net::TcpConnectionPtr &conn,
             const google::protobuf::Message &message) {

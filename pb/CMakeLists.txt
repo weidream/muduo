@@ -15,6 +15,5 @@ target_include_directories(improto PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
 install(FILES ${PROTOHDRS} DESTINATION include/pb)
 
-
 install(TARGETS improto DESTINATION lib)
 message(STATUS "improto2")

@@ -12,8 +12,9 @@
 #include <string>
 namespace msgserver {
 
-typedef class IMUser : boost::noncopyable {
-  IMUser(const std::string name &);
+class IMUser : boost::noncopyable {
+public:
+  IMUser(const std::string &);
   ~IMUser();
 
 private:
@@ -27,23 +28,24 @@ private:
 
   // std::set<muduo::net::TcpConnectionPtr>
 };
+
 typedef boost::weak_ptr<IMUser> IMUserWeakPtr;
 typedef boost::shared_ptr<IMUser> IMUserPtr;
 
-class UserConn {
+class UserConn : boost::noncopyable {
 public:
   UserConn(const std::string &version, IMUserPtr &user, uint32_t client_type,
            uint32_t on_line_status)
-      : login_time_(muduo::Timestamp::now()), client_version_(version),
-        client_type_(client_type), user_ptr_(user),
-        online_status_(on_line_status) {}
+      : client_version_(version), user_ptr_(user), client_type_(client_type),
+        online_status_(on_line_status), login_time_(muduo::Timestamp::now()) {}
+  ~UserConn() {}
 
 private:
   std::string client_version_;
+  IMUserPtr user_ptr_;
   uint32_t client_type_;
   uint32_t online_status_;
   muduo::Timestamp login_time_;
-  IMUserPtr user_ptr_;
 };
 
 typedef boost::shared_ptr<UserConn> UserConnPtr;

@@ -5,7 +5,7 @@ UserManager *UserManager::instance() {
   return &T;
 }
 
-IMUserPtr getUserByName(const sting &name) {
+IMUserPtr UserManager::getUserByName(const std::string &name) {
   IMUserPtr pUser;
   IMUserWeakPtr &wkUser = usermap_[name];
   pUser = wkUser.lock();

@@ -11,7 +11,7 @@
 #include <muduo/net/TcpServer.h>
 
 #include <map>
-#inlucde < string >
+#include <string>
 
 namespace msgserver {
 typedef std::map<std::string, IMUserWeakPtr> UserMap;
@@ -20,7 +20,7 @@ class UserManager : boost::noncopyable {
 public:
   static UserManager *instance();
   // IMUserWeakPtr getUserById(){};
-  IMUserPtr getUserByName(const sting &);
+  IMUserPtr getUserByName(const std::string &);
 
 private:
   UserMap usermap_;
