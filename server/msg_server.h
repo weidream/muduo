@@ -27,10 +27,10 @@ public:
 
 private:
   void OnIMLoginReq(const muduo::net::TcpConnectionPtr &conn,
-                    IMLoginReqPtr &message, muduo::Timestamp receiveTime);
+                    const IMLoginReqPtr &message, muduo::Timestamp receiveTime);
 
   void OnIMMsgData(const muduo::net::TcpConnectionPtr &conn,
-                   IMMsgDataPtr &message, muduo::Timestamp receiveTime);
+                   const IMMsgDataPtr &message, muduo::Timestamp receiveTime);
   void onAnswer(const muduo::net::TcpConnectionPtr &, const AnswerPtr &message,
                 muduo::Timestamp);
   void onConnection(const muduo::net::TcpConnectionPtr &conn);

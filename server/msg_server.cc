@@ -25,10 +25,8 @@ MsgServer::MsgServer(EventLoop *loop, const InetAddress &listenAddr)
 
   dispatcher->registerMessageCallback<IMLogin::IMLoginReq>(
       boost::bind(&MsgServer::OnIMLoginReq, this, _1, _2, _3));
-#if 0
   dispatcher->registerMessageCallback<IMMessage::IMMsgData>(
       boost::bind(&MsgServer::OnIMMsgData, this, _1, _2, _3));
-#endif
 }
 
 void MsgServer::runTimer() {
@@ -44,7 +42,7 @@ void MsgServer::runTimer() {
 void MsgServer::onAnswer(const muduo::net::TcpConnectionPtr &,
                          const AnswerPtr &message, muduo::Timestamp) {}
 void MsgServer::OnIMLoginReq(const muduo::net::TcpConnectionPtr &conn,
-                             IMLoginReqPtr &message,
+                             const IMLoginReqPtr &message,
                              muduo::Timestamp receiveTime) {
 #if 0
   std::string name = message->user_name();
@@ -63,7 +61,7 @@ void MsgServer::OnIMLoginReq(const muduo::net::TcpConnectionPtr &conn,
 }
 
 void MsgServer::OnIMMsgData(const muduo::net::TcpConnectionPtr &conn,
-                            IMMsgDataPtr &message,
+                            const IMMsgDataPtr &message,
                             muduo::Timestamp receiveTime) {}
 
 void MsgServer::onConnection(const TcpConnectionPtr &conn) {
