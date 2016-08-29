@@ -1,0 +1,236 @@
+syntax = "proto3";
+package IMBaseDefine;
+
+option java_package = "com.muduo.im.protobuf";
+option optimize_for = LITE_RUNTIME;
+
+// service id
+enum ServiceID{
+		SID_NONE            = 0x0000;
+    SID_LOGIN           = 0x0001;           // for login
+    SID_BUDDY_LIST      = 0x0002;		    // for friend list
+    SID_MSG             = 0x0003;           //
+    SID_GROUP           = 0x0004;           // for group message
+    SID_FILE            = 0x0005;
+    SID_SWITCH_SERVICE  = 0x0006;
+    SID_OTHER           = 0x0007;
+    SID_INTERNAL        = 0x0008;
+}
+
+enum ResultType{
+	REFUSE_REASON_NONE				= 0;
+	REFUSE_REASON_NO_MSG_SERVER		= 1;
+	REFUSE_REASON_MSG_SERVER_FULL 	= 2;
+	REFUSE_REASON_NO_DB_SERVER		= 3;
+	REFUSE_REASON_NO_LOGIN_SERVER	= 4;
+	REFUSE_REASON_NO_ROUTE_SERVER	= 5;
+	REFUSE_REASON_DB_VALIDATE_FAILED = 6;
+	REFUSE_REASON_VERSION_TOO_OLD	= 7;
+
+}
+
+enum KickReasonType{
+	KICK_REASON_DUPLICATE_USER = 0;
+  KICK_REASON_MOBILE_KICK    = 1;
+}
+
+enum OnlineListType{
+	ONLINE_LIST_TYPE_FRIEND_LIST = 0;
+}
+
+enum UserStatType{
+	USER_STATUS_ONLINE 	= 0;
+	USER_STATUS_OFFLINE	= 1;
+	USER_STATUS_LEAVE	= 2;
+
+}
+enum SessionType{
+	SESSION_TYPE_SINGLE = 0;          	//单个用户会话
+	SESSION_TYPE_GROUP = 1;          	//群会话
+}
+
+enum MsgType{
+	MSG_TYPE_SINGLE_NONE    = 0x0;
+	MSG_TYPE_SINGLE_TEXT    = 0x01;
+  MSG_TYPE_SINGLE_AUDIO   = 0x02;
+  MSG_TYPE_GROUP_TEXT     = 0x11;
+  MSG_TYPE_GROUP_AUDIO    = 0x12;
+}
+
+enum ClientType{
+		CLIENT_TYPE_NONE    = 0x0;
+		CLIENT_TYPE_WINDOWS     = 0x01;
+    CLIENT_TYPE_MAC         = 0x02;
+    CLIENT_TYPE_IOS         = 0x11;
+    CLIENT_TYPE_ANDROID     = 0x12;
+}
+
+enum GroupType{
+	GROUP_TYPE_NORMAL		= 0x00;
+	GROUP_TYPE_TMP			= 0x01;
+}
+
+enum GroupModifyType{
+	GROUP_MODIFY_TYPE_ADD	= 0x00;
+	GROUP_MODIFY_TYPE_DEL	= 0x01;
+}
+
+enum TransferFileType{
+    FILE_TYPE_ONLINE        = 0x00;
+    FILE_TYPE_OFFLINE       = 0x01;
+}
+
+enum ClientFileState{
+    CLIENT_FILE_PEER_READY  = 0x00;
+    CLIENT_FILE_CANCEL      = 0x01;
+    CLIENT_FILE_REFUSE      = 0x02;
+    CLIENT_FILE_DONE       = 0x03;
+}
+
+enum ClientFileRole{
+    CLIENT_REALTIME_SENDER  = 0x00;
+    CLIENT_REALTIME_RECVER  = 0x01;
+    CLIENT_OFFLINE_UPLOAD   = 0x02;
+    CLIENT_OFFLINE_DOWNLOAD = 0x03;
+}
+
+enum FileServerError{
+    FILE_SERVER_ERRNO_OK                                = 0x00;
+    FILE_SERVER_ERRNO_CREATE_TASK_ID_ERROR              = 0x01;
+    FILE_SERVER_ERRNO_CREATE_TASK_ERROR                 = 0x02;
+    FILE_SERVER_ERRNO_LOGIN_INVALID_TOKEN               = 0x03;
+    FILE_SERVER_ERRNO_INVALID_USER_FOR_TASK             = 0x04;
+    FILE_SERVER_ERRNO_PULL_DATA_WITH_INVALID_TASK_ID    = 0x05;
+    FILE_SERVER_ERRNO_PULL_DATA_ILLIEAGE_USER           = 0x06;
+    FILE_SERVER_ERRNO_PULL_DATA_MKDIR_ERROR             = 0x07;
+    FILE_SERVER_ERRNO_PULL_DATA_OPEN_FILE_ERROR         = 0x08;
+    FILE_SERVER_ERRNO_PULL_DATA_READ_FILE_HEADER_ERROR  = 0x09;
+    FILE_SERVER_ERRNO_PULL_DATA_ALLOC_MEM_ERROR         = 0x0a;
+    FILE_SERVER_ERRNO_PULL_DATA_SEEK_OFFSET_ERROR       = 0x0b;
+    FILE_SERVER_ERRNO_PULL_DATA_FINISHED                = 0x0c;
+}
+
+enum SessionStatusType{
+    SESSION_STATUS_OK           = 0x00;
+    SESSION_STATUS_DELETE       = 0x01;
+}
+
+enum DepartmentStatusType{
+    DEPT_STATUS_OK              = 0x00;
+    DEPT_STATUS_DELETE          = 0x01;
+}
+
+message IpAddr{
+	string ip = 1;
+	uint32 port = 2;
+}
+
+message UserInfo{
+	uint32 user_id = 1;
+	uint32 user_gender = 2; 	//// 用户性别,男：1 女：2 人妖/外星人：0
+	string user_nick_name = 3;	//绰号
+	string avatar_url = 4;
+	uint32 department_id = 5;
+	string email = 6;
+	string user_real_name = 7;	//真名
+	string user_tel = 8;
+	string user_domain = 9;	//用户名拼音
+  uint32 status = 10;        //0:在职  1. 试用期 2. 正式 3. 离职 4.实习,  client端需要对“离职”进行不展示
+  string sign_info = 11;
+}
+
+message ContactSessionInfo{
+	uint32 session_id = 1;
+	SessionType session_type = 2;
+  SessionStatusType session_status = 3;
+	uint32 updated_time = 4;
+	uint32 latest_msg_id = 5;
+	bytes latest_msg_data = 6;
+  MsgType latest_msg_type = 7;
+  uint32 latest_msg_from_user_id = 8;
+}
+
+message UserStat{
+	uint32 user_id = 1;
+	UserStatType status = 2;
+}
+
+message ServerUserStat{
+	uint32 user_id = 1;
+	UserStatType status = 2;
+	ClientType client_type = 3;
+}
+
+message UnreadInfo{
+	uint32 session_id = 1;
+	SessionType session_type = 2;
+	uint32 unread_cnt = 3;
+	uint32 latest_msg_id = 4;
+	bytes latest_msg_data = 5;
+    MsgType latest_msg_type = 6;
+    uint32 latest_msg_from_user_id = 7;        //发送得用户id
+}
+
+message MsgInfo{
+	uint32 msg_id = 1;
+	uint32 from_session_id = 2;   //发送的用户id
+	uint32 create_time = 3;
+	MsgType msg_type = 4;
+	bytes msg_data = 5;
+}
+
+message GroupVersionInfo{
+	uint32 group_id = 1;
+	uint32 version = 2;
+
+}
+
+message GroupInfo{
+	uint32 group_id = 1;
+	uint32 version = 2;
+	string group_name = 3;
+	string group_avatar = 4;
+	uint32 group_creator_id = 5;
+	GroupType group_type = 6;
+	uint32 shield_status = 7;		//1: shield  0: not shield
+	repeated uint32 group_member_list = 8;
+}
+
+message UserTokenInfo{
+  uint32 user_id = 1;
+	ClientType user_type = 2;
+	string token = 3;
+	uint32 push_count = 4;
+	uint32 push_type = 5;			//1: 正常推送  	2:无打扰式推送
+}
+
+message PushResult{
+	string user_token = 1;
+	uint32 result_code = 2;
+}
+
+message ShieldStatus{
+	uint32 user_id = 1;
+	uint32 group_id = 2;
+	uint32 shield_status = 3;		//1: shield  0: not shield
+}
+
+message OfflineFileInfo{
+    uint32 from_user_id = 1;
+    string task_id = 2;
+    string file_name = 3;
+    uint32 file_size = 4;
+}
+
+message DepartInfo{
+  	uint32 dept_id = 1;
+	  uint32 priority = 2;
+	  string dept_name = 3;
+    uint32 parent_dept_id = 4;
+    DepartmentStatusType dept_status = 5;
+}
+
+message PushShieldStatus{
+    uint32 user_id = 1;
+    uint32 shield_status = 2;		//1: shield  0: not shield
+}

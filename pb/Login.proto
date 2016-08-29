@@ -1,0 +1,36 @@
+syntax = "proto3";
+package IMLogin;
+//import "BaseDefine.proto";
+option java_package = "com.muduo.im.protobuf";
+//option optimize_for = LITE_RUNTIME;
+
+message IMMsgServReq{
+
+}
+
+message IMMsgServRsp{
+//	BaseDefine.ResultType result_code = 1;
+	string prior_ip = 2;
+	string backip_ip = 3;
+	uint32 port = 4;
+}
+
+message IMLoginReq{
+	string user_name = 1;
+	string password = 2;
+	BaseDefine.UserStatType online_status = 3;
+	BaseDefine.ClientType client_type = 4;
+	string client_version = 5;
+}
+
+message IMLoginRes{
+	uint32 server_time = 1;
+	BaseDefine.ResultType result_code = 2;
+	string result_string = 3;
+	BaseDefine.UserStatType online_status = 4;
+	BaseDefine.UserInfo user_info = 5;
+}
+
+message IMLogoutRsp{
+	uint32 result_code = 1;
+}

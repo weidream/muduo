@@ -26,7 +26,7 @@ set(CXX_FLAGS
  -Wwrite-strings
  -march=native
  # -MMD
- # -std=c++0x
+ -std=c++0x
  -rdynamic
  )
 if(CMAKE_BUILD_BITS EQUAL 32)
@@ -94,13 +94,14 @@ message(STATUS "CXX_FLAGS = " ${CMAKE_CXX_FLAGS} " " ${CMAKE_CXX_FLAGS_${BUILD_T
 
 add_subdirectory(muduo/base)
 add_subdirectory(muduo/net)
+#if(NOT CMAKE_BUILD_NO_EXAMPLES)
+#  add_subdirectory(contrib)
+#  add_subdirectory(examples)
+#else()
+#  if(CARES_INCLUDE_DIR AND CARES_LIBRARY)
+#    add_subdirectory(examples/cdns)
+#  endif()
+#endif()
 
-if(NOT CMAKE_BUILD_NO_EXAMPLES)
-  add_subdirectory(contrib)
-  add_subdirectory(examples)
-else()
-  if(CARES_INCLUDE_DIR AND CARES_LIBRARY)
-    add_subdirectory(examples/cdns)
-  endif()
-endif()
-
+add_subdirectory(pb)
+add_subdirectory(server)
