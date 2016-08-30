@@ -10,8 +10,6 @@ using namespace muduo::net;
 int main(int argc, char *argv[]) {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
   msgserver::MsgServerProc::instance();
-  msgserver::UserManager::instance();
-
   muduo::net::EventLoop loop;
 
   loop.loop();

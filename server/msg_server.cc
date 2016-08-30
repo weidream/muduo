@@ -1,5 +1,6 @@
 #include "msg_server.h"
 #include "msg_server_proc.h"
+#include "stdio.h"
 #include "user_manager.h"
 #include <boost/bind.hpp>
 #include <boost/make_shared.hpp>
@@ -9,6 +10,10 @@ using namespace muduo;
 using namespace muduo::net;
 
 namespace msgserver {
+
+__thread int t_loop_index; // for eventloop index
+
+AtomicInt32 MsgServer::globalCount_;
 
 MsgServer::MsgServer(EventLoop *loop, const InetAddress &listenAddr)
     : server_(loop, listenAddr, "msgServer") {
@@ -29,7 +34,25 @@ MsgServer::MsgServer(EventLoop *loop, const InetAddress &listenAddr)
       boost::bind(&MsgServer::OnIMMsgData, this, _1, _2, _3));
 }
 
+void MsgServer::threadInit(EventLoop *loop) {
+  // init the thread local data
+  assert(LocalConnections_::pointer() == NULL);
+  assert(LocalUserManager::pointer() == NULL);
+  LocalConnections_::instance();
+  LocalUserManager::instance();
+  assert(LocalConnections_::pointer() != NULL);
+  assert(LocalUserManager::pointer() != NULL);
+  MutexLockGuard lock(mutex_);
+  t_loop_index = globalCount_.incrementAndGet();
+  loops_.insert(std::make_pair(t_loop_index, loop));
+}
+
+void MsgServer::start() {
+  server_.setThreadInitCallback(boost::bind(&MsgServer::threadInit, this, _1));
+  server_.start();
+}
 void MsgServer::runTimer() {
+#if 0
   Timestamp now = Timestamp::now();
   for (auto it = conn_set_.begin(), end = conn_set_.end(); it != end;) {
     if ((*it)->checkConnectionExpired(now)) {
@@ -38,26 +61,28 @@ void MsgServer::runTimer() {
       ++it;
     }
   }
+#endif
 }
+
 void MsgServer::onAnswer(const muduo::net::TcpConnectionPtr &,
                          const AnswerPtr &message, muduo::Timestamp) {}
+
 void MsgServer::OnIMLoginReq(const muduo::net::TcpConnectionPtr &conn,
                              const IMLoginReqPtr &message,
                              muduo::Timestamp receiveTime) {
-#if 0
+
   std::string name = message->user_name();
   std::string client_version = message->client_version();
   uint32_t online_status = message->online_status();
   uint32_t client_type = message->client_type();
-  IMUserPtr pUser = UserManager::instance()->getUserByName(name);
-  try {
-    boost::any_cast<UserConnPtr>(conn->getContext());
-  } catch (boost::bad_any_cast e) {
-    // FIXME
-    conn->setContext(boost::make_shared<UserConn>(client_version, pUser,
-                                                  client_type, online_status));
-  }
-#endif
+
+  IMUserPtr pUser = LocalUserManager::instance().getUserByName(name);
+  assert(!conn->getContext().empty());
+  IMUserConnPtr pUserConn = boost::any_cast<IMUserConnPtr>(conn->getContext());
+  pUserConn->setClienttype(client_type);
+  pUserConn->setClientversion(client_version);
+  pUserConn->setUserPtr(pUser);
+  pUserConn->setOnlinestatus(online_status);
 }
 
 void MsgServer::OnIMMsgData(const muduo::net::TcpConnectionPtr &conn,
@@ -66,10 +91,23 @@ void MsgServer::OnIMMsgData(const muduo::net::TcpConnectionPtr &conn,
 
 void MsgServer::onConnection(const TcpConnectionPtr &conn) {
   if (conn->connected()) {
+    int32_t index = globalCount_.incrementAndGet();
+    IMUserConnPtr pUserConn = boost::make_shared<IMUserConn>(index);
+    conn->setContext(pUserConn);
     conn->setExpiredTime(addTime(Timestamp::now(), 8));
-    conn_set_.insert(conn);
+    LocalConnections_::instance().insert(std::make_pair(index, conn));
+
   } else {
-    conn_set_.erase(conn);
+    assert(!conn->getContext().empty());
+    int32_t index = 0;
+    {
+      //??!!!!
+      IMUserConnPtr pUserConn =
+          boost::any_cast<IMUserConnPtr>(conn->getContext());
+      index = pUserConn->getIdex();
+    }
+    assert(index != 0);
+    LocalConnections_::instance().erase(index);
   }
 }
 

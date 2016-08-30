@@ -1,10 +1,11 @@
 #include "user_manager.h"
 namespace msgserver {
+#if 0
 UserManager *UserManager::instance() {
   static UserManager T;
   return &T;
 }
-
+#endif
 IMUserPtr UserManager::getUserByName(const std::string &name) {
   IMUserPtr pUser;
   IMUserWeakPtr &wkUser = usermap_[name];

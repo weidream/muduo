@@ -145,7 +145,7 @@ private:
   Buffer outputBuffer_; // FIXME: use list<Buffer> as output buffer.
   boost::any context_;
   bool reading_;
-  Timestamp expiredTime_; // save the time out to delete
+  Timestamp expiredTime_; // save the time out to deletez
   // FIXME: creationTime_, lastReceiveTime_
   //        bytesReceived_, bytesSent_
 };

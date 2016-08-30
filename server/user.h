@@ -32,15 +32,20 @@ private:
 typedef boost::weak_ptr<IMUser> IMUserWeakPtr;
 typedef boost::shared_ptr<IMUser> IMUserPtr;
 
-class UserConn : boost::noncopyable {
+class IMUserConn : boost::noncopyable {
 public:
-  UserConn(const std::string &version, IMUserPtr &user, uint32_t client_type,
-           uint32_t on_line_status)
-      : client_version_(version), user_ptr_(user), client_type_(client_type),
-        online_status_(on_line_status), login_time_(muduo::Timestamp::now()) {}
-  ~UserConn() {}
+  IMUserConn(int32_t index)
+      : index_(index), client_version_("windos-pc1.1"), client_type_(1),
+        online_status_(1), login_time_(muduo::Timestamp::now()) {}
+  ~IMUserConn() {}
+  void setClientversion(const std::string &rhs) { client_version_ = rhs; }
+  void setUserPtr(const IMUserPtr &rhs) { user_ptr_ = rhs; }
+  void setClienttype(const uint32_t type) { client_type_ = type; }
+  void setOnlinestatus(const uint32_t status) { online_status_ = status; }
+  int32_t getIdex() { return index_; }
 
 private:
+  int32_t index_; // the index of usermanager map
   std::string client_version_;
   IMUserPtr user_ptr_;
   uint32_t client_type_;
@@ -48,7 +53,7 @@ private:
   muduo::Timestamp login_time_;
 };
 
-typedef boost::shared_ptr<UserConn> UserConnPtr;
+typedef boost::shared_ptr<IMUserConn> IMUserConnPtr;
 }
 
 #endif

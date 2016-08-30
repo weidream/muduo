@@ -18,7 +18,7 @@ typedef std::map<std::string, IMUserWeakPtr> UserMap;
 
 class UserManager : boost::noncopyable {
 public:
-  static UserManager *instance();
+  // static UserManager *instance();
   // IMUserWeakPtr getUserById(){};
   IMUserPtr getUserByName(const std::string &);
 
