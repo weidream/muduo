@@ -10,10 +10,15 @@ using namespace muduo::net;
 int main(int argc, char *argv[]) {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
   msgserver::MsgServerProc::instance();
+
+  // start message server
   muduo::net::EventLoop loop;
-
+  uint16_t port = 8888;
+  InetAddress serverAddr(port);
+  MsgServer server(&loop, serverAddr);
+  server.setThreadNum(5);
+  server.start();
   loop.loop();
-
   google::protobuf::ShutdownProtobufLibrary();
   return 0;
 }

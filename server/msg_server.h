@@ -27,7 +27,7 @@ class MsgServer : boost::noncopyable {
 public:
   MsgServer(muduo::net::EventLoop *loop,
             const muduo::net::InetAddress &listenAddr);
-  ~MsgServer();
+  ~MsgServer() {}
   void start();
   void setThreadNum(int numThreads) { server_.setThreadNum(numThreads); }
 
