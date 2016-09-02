@@ -20,6 +20,7 @@ message(STATUS "PROTOBUF_INCLUDE_DIR = ${PROTOBUF_INCLUDE_DIR}")
 message(STATUS "PROJECT_BINARY_DIR = ${PROJECT_BINARY_DIR}")
 
 set_source_files_properties(${msgserver_SRCS} PROPERTIES COMPILE_FLAGS "-Wno-conversion -Wno-shadow")
+set_source_files_properties(${clientserver_SRCS} PROPERTIES COMPILE_FLAGS "-Wno-conversion -Wno-shadow")
 
 add_executable(msgserver ${msgserver_SRCS})
 add_executable(test_client ${clientserver_SRCS})
