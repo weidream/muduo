@@ -3,13 +3,14 @@
 #include <IMBaseDefine.pb.h>
 #include <IMLogin.pb.h>
 #include <IMMessage.pb.h>
+#include <boost/bind.hpp>
 #include <muduo/base/Logging.h>
 #include <muduo/base/Mutex.h>
 #include <muduo/net/EventLoop.h>
+#include <muduo/net/EventLoopThread.h>
 #include <muduo/net/TcpClient.h>
 
-#include <boost/bind.hpp>
-
+#include <iostream>
 #include <stdio.h>
 #include <time.h>
 using namespace muduo;
@@ -38,7 +39,8 @@ public:
   }
 
   void connect() { client_.connect(); }
-  void write(google::protobuf::Message &msg) { codec_.send(msg); }
+  void write(google::protobuf::Message &msg) { codec_.send(connection_, msg); }
+  void disconnect() { client_.disconnect(); }
 
 private:
   void onConnection(const TcpConnectionPtr &conn) {
@@ -47,6 +49,7 @@ private:
              << (conn->connected() ? "UP" : "DOWN");
 
     if (conn->connected()) {
+      connection_ = conn;
       IMLogin::IMLoginReq req;
       req.set_user_name("weigd");
       req.set_password("test");
@@ -73,6 +76,7 @@ private:
   TcpClient client_;
   ProtobufDispatcher dispatcher_;
   ProtobufCodec codec_;
+  TcpConnectionPtr connection_;
 };
 
 int main(int argc, char *argv[]) {
@@ -86,15 +90,18 @@ int main(int argc, char *argv[]) {
   client.connect();
   std::string line;
   while (std::getline(std::cin, line)) {
-    IMMessage::IMMsgData msgdata;
-    msgdata.set_from_user_id("1000");
-    msgdata.set_to_session_id("1001");
-    msgdata.set_msg_id(message_id++);
-    msgdata.set_create_time(time(NULL));
-    msgdata.set_msg_type(IMBaseDefine::MsgType::MSG_TYPE_SINGLE_TEXT);
-    msgdata.set_set_msg_data(line);
-    client.write(msgdata);
+    if (register_success) {
+      IMMessage::IMMsgData msgdata;
+      msgdata.set_from_user_id(10000);
+      msgdata.set_to_session_id(10001);
+      msgdata.set_msg_id(message_id++);
+      msgdata.set_create_time(static_cast<uint32_t>(time(NULL)));
+      msgdata.set_msg_type(IMBaseDefine::MsgType::MSG_TYPE_SINGLE_TEXT);
+      msgdata.set_msg_data(line);
+      client.write(msgdata);
+    }
   }
   client.disconnect();
   CurrentThread::sleepUsec(1000 * 1000);
+  return 0;
 }

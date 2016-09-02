@@ -75,7 +75,8 @@ void MsgServer::OnIMLoginReq(const muduo::net::TcpConnectionPtr &conn,
   std::string client_version = message->client_version();
   uint32_t online_status = message->online_status();
   uint32_t client_type = message->client_type();
-
+  LOG_INFO << name << " " << client_version << " "
+           << "client_type";
   IMUserPtr pUser = LocalUserManager::instance().getUserByName(name);
   assert(!conn->getContext().empty());
   IMUserConnPtr pUserConn = boost::any_cast<IMUserConnPtr>(conn->getContext());
@@ -90,13 +91,18 @@ void MsgServer::OnIMMsgData(const muduo::net::TcpConnectionPtr &conn,
                             muduo::Timestamp receiveTime) {}
 
 void MsgServer::onConnection(const TcpConnectionPtr &conn) {
+  LOG_INFO << conn->localAddress().toIpPort() << " -> "
+           << conn->peerAddress().toIpPort() << " is "
+           << (conn->connected() ? "UP" : "DOWN");
   if (conn->connected()) {
     int32_t index = globalCount_.incrementAndGet();
     IMUserConnPtr pUserConn = boost::make_shared<IMUserConn>(index);
     conn->setContext(pUserConn);
     conn->setExpiredTime(addTime(Timestamp::now(), 8));
-    LocalConnections_::instance().insert(std::make_pair(index, conn));
 
+    // auto result =
+    LocalConnections_::instance().insert(std::make_pair(index, conn));
+    // assert(!result.second);
   } else {
     assert(!conn->getContext().empty());
     int32_t index = 0;
