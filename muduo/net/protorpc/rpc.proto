@@ -1,7 +1,8 @@
-package muduo.net;
+syntax = "proto3";
+package IMRpc;
 // option go_package = "muduorpc";
-option java_package = "com.chenshuo.muduo.protorpc";
-option java_outer_classname = "RpcProto";
+//option java_package = "com.chenshuo.muduo.protorpc";
+//option java_outer_classname = "RpcProto";
 
 enum MessageType
 {
