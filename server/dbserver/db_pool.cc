@@ -120,10 +120,8 @@ DBConnPtr DBPool::createConnection()
     {
         return nullptr;
     }
-    mysql_options(mysql, MYSQL_OPT_READ_TIMEOUT,
-        reinterpret_cast<char*>(&timeout));
-    mysql_options(mysql, MYSQL_OPT_WRITE_TIMEOUT,
-        reinterpret_cast<char*>(&timeout));
+    mysql_options(mysql, MYSQL_OPT_READ_TIMEOUT, reinterpret_cast<char*>(&timeout));
+    mysql_options(mysql, MYSQL_OPT_WRITE_TIMEOUT, reinterpret_cast<char*>(&timeout));
 
     int opt = 1;
     mysql_options(mysql, MYSQL_OPT_RECONNECT, reinterpret_cast<char*>(&opt));
@@ -171,6 +169,8 @@ void DBPool::relConnection(DBConnPtr&& p)
 
 void DBManager::init()
 {
+    //only for test
+    //
     string username("root");
     string passwd("weigd");
     string ipAddr("127.0.0.1");
