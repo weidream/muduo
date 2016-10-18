@@ -2,29 +2,28 @@
 #include "db_pool.h"
 #include "db_errdef.h"
 // DBConn
-#include <muduo/base/Logging.h>
-namespace dbserver
-{
+//#include <muduo/base/Logging.h>
+//#include <muduo/base/Timestamp.h>
+
+namespace dbserver {
 using std::vector;
 using namespace muduo;
 using namespace muduo::net;
-namespace muduo
-{
-class MutexLockGuard;
-}
+
 bool DBConnGuard::ping()
 {
 
     if (mysql_ping(pConn_->getMysql()) != 0)
     {
+        //TOTO DEBUG
         pConn_->setConnected(false);
     }
     return pConn_->getConnected();
 }
 
 int DBConnGuard::getQueryResults(const string& command,
-    vector<vector<string>>* results,
-    vector<string>* fields)
+                                 vector<vector<string>>* results,
+                                 vector<string>* fields)
 {
     int ret = query(command);
     if (ret)
@@ -32,8 +31,7 @@ int DBConnGuard::getQueryResults(const string& command,
     return getResults(results, fields);
 }
 
-int DBConnGuard::getResults(vector<vector<string>>* results,
-    vector<string>* fields)
+int DBConnGuard::getResults(vector<vector<string>>* results, vector<string>* fields)
 {
     MYSQL_RES* result = mysql_store_result(pConn_->getMysql());
     if (result)
@@ -44,7 +42,7 @@ int DBConnGuard::getResults(vector<vector<string>>* results,
         {
             for (size_t i = 0; i < field_count; i++)
             {
-                fields->push_back(result->fields[ i ].name);
+                fields->push_back(result->fields[i].name);
             }
         }
         for (size_t i = 0; i < row_count; i++)
@@ -55,7 +53,7 @@ int DBConnGuard::getResults(vector<vector<string>>* results,
             vector<string> result_row;
             for (size_t j = 0; j < field_count; j++)
             {
-                result_row.push_back(row[ j ] ? row[ j ] : "");
+                result_row.push_back(row[j] ? row[j] : "");
             }
             results->push_back(std::move(result_row));
         }
@@ -71,10 +69,12 @@ int DBConnGuard::query(const string& command)
     {
         if (ret < 0)
         {
+            //TOTO DEBUG
             return MYSQL_FAIL;
         }
         else
         {
+            //TOTO DEBUG
             return MYSQL_NODATA;
         }
     }
@@ -83,15 +83,15 @@ int DBConnGuard::query(const string& command)
 
 // DBPool
 DBPool::DBPool(const string& ip, const string& username, const string& passwd,
-    const string& dbname, int port, int max_con)
-: ip_(ip),
-  username_(username),
-  passwd_(passwd),
-  dbname_(dbname),
-  port_(port),
-  max_con_(max_con),
-  mutex_(),
-  notFree_(mutex_)
+               const string& dbname, int port, int max_con)
+    : ip_(ip),
+      username_(username),
+      passwd_(passwd),
+      dbname_(dbname),
+      port_(port),
+      max_con_(max_con),
+      mutex_(),
+      notFree_(mutex_)
 {
     assert(max_con > 0);
     for (int i = 0; i < max_con / 2; i++)
@@ -127,8 +127,8 @@ DBConnPtr DBPool::createConnection()
     mysql_options(mysql, MYSQL_OPT_RECONNECT, reinterpret_cast<char*>(&opt));
 
     if (!mysql_real_connect(mysql, ip_.c_str(), username_.c_str(),
-            passwd_.c_str(), dbname_.c_str(),
-            static_cast<uint16_t>(port_), 0, 0))
+                            passwd_.c_str(), dbname_.c_str(),
+                            static_cast<uint16_t>(port_), 0, 0))
     {
         mysql_close(mysql);
         mysql = NULL;
@@ -163,10 +163,38 @@ void DBPool::relConnection(DBConnPtr&& p)
 {
     MutexLockGuard lock(mutex_);
     conlist_.push_back(std::move(p));
+    notFree_.notify();
 }
 
+void DBPool::onTimer(muduo::Timestamp t)
+{
+    // only test
+    MutexLockGuard lock(mutex_);
+    for (auto& i : conWklist_)
+    {
+        DBConnPtr p = i.lock();
+        if (p)
+        {
+            if (p->getTime_.microSecondsSinceEpoch() == 0)
+                break;
+            int diff = static_cast<int>(timeDifference(t, p->getTime())); //return second
+            if (diff >= 10)
+            {
+                //TODO debug
+            }
+        }
+        else
+        {
+            //erase
+        }
+    }
+}
 // DBManager
 
+void DBManager::onTimer(muduo::Timestamp t)
+{
+    master_->onTimer(t);
+}
 void DBManager::init()
 {
     //only for test

@@ -1,17 +1,4 @@
-Muduo is a multithreaded C++ network library based on
-the reactor pattern.
-It runs on Linux with kernel version >= 2.6.28.
-http://code.google.com/p/muduo/
 
-Copyright (c) 2010, Shuo Chen.  All rights reserved.
-
-Use of this source code is governed by a BSD-style
-license that can be found in the License file.
-|
-  __  __           _
- |  \/  |         | |
- | \  / |_   _  __| |_   _  ___
- | |\/| | | | |/ _` | | | |/ _ \
- | |  | | |_| | (_| | |_| | (_) |
- |_|  |_|\__,_|\__,_|\__,_|\___/
-
+自己基于muduo网络库造的轮子
+/server/dbserver/db_pool  基于mysql的数据库连接池
+/server/base/timingWheel  修改timingWheel的实现，可以用insert函数来动态修改超时时间
