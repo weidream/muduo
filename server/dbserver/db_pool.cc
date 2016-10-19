@@ -12,10 +12,10 @@ using namespace muduo::net;
 
 bool DBConnGuard::ping()
 {
-
     if (mysql_ping(pConn_->getMysql()) != 0)
     {
         //TOTO DEBUG
+        //close connection?
         pConn_->setConnected(false);
     }
     return pConn_->getConnected();
@@ -170,22 +170,21 @@ void DBPool::onTimer(muduo::Timestamp t)
 {
     // only test
     MutexLockGuard lock(mutex_);
-    for (auto& i : conWklist_)
+    for(auto it = conWklist_.begin();i!=conWklist_end();/**/)
     {
-        DBConnPtr p = i.lock();
-        if (p)
-        {
-            if (p->getTime_.microSecondsSinceEpoch() == 0)
-                break;
-            int diff = static_cast<int>(timeDifference(t, p->getTime())); //return second
-            if (diff >= 10)
-            {
-                //TODO debug
-            }
-        }
-        else
-        {
-            //erase
+        DBConnPtr p = it.lock();
+        if (p){
+          it++;
+          if (p->getTime_.microSecondsSinceEpoch() == 0)
+              break;
+          int diff = static_cast<int>(timeDifference(t, p->getTime())); //return second
+          if (diff >= 10)
+          {
+              //TODO debug
+          }
+        }else{
+          //
+          it = conWklist_.erase(it);
         }
     }
 }

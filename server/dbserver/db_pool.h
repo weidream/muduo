@@ -103,29 +103,33 @@ class DBManager : boost::noncopyable
     DBPool* slave_; // TODO if the number of slave >2
     // PoolMap poolmap_;
 };
-struct DBConn : boost::noncopyable
+
+class DBConn : boost::noncopyable
 {
-    // public:
+public:
     DBConn(DBPool* pool, MYSQL* mysql)
-        : pool_(pool), mysql_(mysql), connected_(true), getTime_() {}
+        : pool_(pool), mysql_(mysql), connected_(true), getTime_(),holder_(CurrentThread::tid()) {}
     ~DBConn()
     {
         assert(mysql_);
         ::mysql_close(mysql_);
     }
-    void setTime() { getTime_ = muduo::Timestamp::now(); }
-    void resetTime() { getTime_ = muduo::Timestamp(); }
+    void setTimeAndHolder() { getTime_ = muduo::Timestamp::now();holder_ = CurrentThread::tid();}
+    void resetTimeAndHolder() { getTime_ = muduo::Timestamp(); holder_= 0;}
     muduo::Timestamp getTime() { return getTime_; }
     DBPool* getPool() { return pool_; }
     MYSQL* getMysql() { return mysql_; }
     bool getConnected() { return connected_; }
     void setConnected(bool b) { connected_ = b; }
 
-    //  private:
+private:
     DBPool* pool_;
     MYSQL* mysql_;
     bool connected_;
     muduo::Timestamp getTime_; //AtomicIntegerT
+    pthread_mutex_t mutex_;
+    pid_t holder_;
+    friend class DBConnGuard;
 };
 
 class DBConnGuard : boost::noncopyable
@@ -134,12 +138,12 @@ class DBConnGuard : boost::noncopyable
     explicit DBConnGuard(DBConnPtr&& pConn)
         : pConn_(std::move(pConn))
     {
-        pConn_->setTime();
+        pConn_->setTimeAndHolder();
     }
     DBConnGuard(DBConnPtr&) = delete;
     ~DBConnGuard()
     {
-        pConn_->resetTime();
+        pConn_->resetTimeAndHolder();
         pConn_->pool_->relConnection(std::move(pConn_));
     }
 

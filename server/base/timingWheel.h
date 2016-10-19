@@ -10,7 +10,6 @@
 #include <utility>
 #include <stdio.h>
 typedef boost::function<void()> TimingWheelCallback;
-//template <typename T>
 
 class timingWheel
 {
@@ -36,7 +35,6 @@ public:
     TimingWheelCallback cb_;
     size_t second_;
     BucketList_iterator it;
-    friend class timingWheel;
   };
   timingWheel(size_t size)
       : list_(static_cast<size_type>(size), Bucket()), size_(size) {}
@@ -67,7 +65,6 @@ public:
   // per-second timer
   void on_timer()
   {
-
     list_.push_back(Bucket());
   }
   BucketList list_;
