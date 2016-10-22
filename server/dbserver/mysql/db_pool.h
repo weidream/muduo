@@ -12,11 +12,13 @@
 #include <muduo/base/Condition.h>
 #include <muduo/base/Timestamp.h>
 #include <muduo/base/Logging.h>
-namespace muduo {
+namespace muduo
+{
 class MutexLockGuard;
 class Timestamp;
 }
-namespace dbserver {
+namespace dbserver
+{
 
 using std::string;
 using std::vector;
@@ -35,16 +37,16 @@ enum
 
 class DBPool : boost::noncopyable
 {
-  public:
+public:
     DBPool(const string& ip, const string& username, const string& passwd,
-           const string& dbname, int port, int max_con);
+        const string& dbname, int port, int max_con);
     ~DBPool();
     // get a mysql connection form pool
     DBConnGuardPtr getConnection();
     void relConnection(DBConnPtr&& p);
     void onTimer(muduo::Timestamp t);
 
-  private:
+private:
     DBConnPtr createConnection();
     string ip_;
     string username_;
@@ -65,7 +67,7 @@ class DBPool : boost::noncopyable
 
 class DBManager : boost::noncopyable
 {
-  public:
+public:
     // typedef std::map<string, DBPool *> PoolMap;
     DBManager() { init(); }
     ~DBManager()
@@ -97,7 +99,7 @@ class DBManager : boost::noncopyable
     }
     void onTimer(muduo::Timestamp t);
 
-  private:
+private:
     void init();
     DBPool* master_;
     DBPool* slave_; // TODO if the number of slave >2
@@ -108,14 +110,22 @@ class DBConn : boost::noncopyable
 {
 public:
     DBConn(DBPool* pool, MYSQL* mysql)
-        : pool_(pool), mysql_(mysql), connected_(true), getTime_(),holder_(CurrentThread::tid()) {}
+    : pool_(pool), mysql_(mysql), connected_(true), getTime_(), holder_(CurrentThread::tid()) {}
     ~DBConn()
     {
         assert(mysql_);
         ::mysql_close(mysql_);
     }
-    void setTimeAndHolder() { getTime_ = muduo::Timestamp::now();holder_ = CurrentThread::tid();}
-    void resetTimeAndHolder() { getTime_ = muduo::Timestamp(); holder_= 0;}
+    void setTimeAndHolder()
+    {
+        getTime_ = muduo::Timestamp::now();
+        holder_ = CurrentThread::tid();
+    }
+    void resetTimeAndHolder()
+    {
+        getTime_ = muduo::Timestamp();
+        holder_ = 0;
+    }
     muduo::Timestamp getTime() { return getTime_; }
     DBPool* getPool() { return pool_; }
     MYSQL* getMysql() { return mysql_; }
@@ -134,9 +144,9 @@ private:
 
 class DBConnGuard : boost::noncopyable
 {
-  public:
+public:
     explicit DBConnGuard(DBConnPtr&& pConn)
-        : pConn_(std::move(pConn))
+    : pConn_(std::move(pConn))
     {
         pConn_->setTimeAndHolder();
     }
@@ -150,11 +160,11 @@ class DBConnGuard : boost::noncopyable
     bool ping();
     int query(const string& command);
     int getQueryResults(const string& command,
-                        std::vector<std::vector<string>>* results,
-                        std::vector<string>* fields);
+        std::vector<std::vector<string>>* results,
+        std::vector<string>* fields);
     int getResults(vector<vector<string>>* results, vector<string>* fields);
 
-  private:
+private:
     DBConnPtr pConn_;
 }; // class DBConnGuard
 
