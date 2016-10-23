@@ -5,7 +5,8 @@
 //#include <muduo/base/Logging.h>
 //#include <muduo/base/Timestamp.h>
 
-namespace dbserver {
+namespace dbserver
+{
 using std::vector;
 using namespace muduo;
 using namespace muduo::net;
@@ -22,8 +23,8 @@ bool DBConnGuard::ping()
 }
 
 int DBConnGuard::getQueryResults(const string& command,
-                                 vector<vector<string>>* results,
-                                 vector<string>* fields)
+    vector<vector<string>>* results,
+    vector<string>* fields)
 {
     int ret = query(command);
     if (ret)
@@ -42,7 +43,7 @@ int DBConnGuard::getResults(vector<vector<string>>* results, vector<string>* fie
         {
             for (size_t i = 0; i < field_count; i++)
             {
-                fields->push_back(result->fields[i].name);
+                fields->push_back(result->fields[ i ].name);
             }
         }
         for (size_t i = 0; i < row_count; i++)
@@ -53,7 +54,7 @@ int DBConnGuard::getResults(vector<vector<string>>* results, vector<string>* fie
             vector<string> result_row;
             for (size_t j = 0; j < field_count; j++)
             {
-                result_row.push_back(row[j] ? row[j] : "");
+                result_row.push_back(row[ j ] ? row[ j ] : "");
             }
             results->push_back(std::move(result_row));
         }
@@ -83,15 +84,15 @@ int DBConnGuard::query(const string& command)
 
 // DBPool
 DBPool::DBPool(const string& ip, const string& username, const string& passwd,
-               const string& dbname, int port, int max_con)
-    : ip_(ip),
-      username_(username),
-      passwd_(passwd),
-      dbname_(dbname),
-      port_(port),
-      max_con_(max_con),
-      mutex_(),
-      notFree_(mutex_)
+    const string& dbname, int port, int max_con)
+: ip_(ip),
+  username_(username),
+  passwd_(passwd),
+  dbname_(dbname),
+  port_(port),
+  max_con_(max_con),
+  mutex_(),
+  notFree_(mutex_)
 {
     assert(max_con > 0);
     for (int i = 0; i < max_con / 2; i++)
@@ -127,8 +128,8 @@ DBConnPtr DBPool::createConnection()
     mysql_options(mysql, MYSQL_OPT_RECONNECT, reinterpret_cast<char*>(&opt));
 
     if (!mysql_real_connect(mysql, ip_.c_str(), username_.c_str(),
-                            passwd_.c_str(), dbname_.c_str(),
-                            static_cast<uint16_t>(port_), 0, 0))
+            passwd_.c_str(), dbname_.c_str(),
+            static_cast<uint16_t>(port_), 0, 0))
     {
         mysql_close(mysql);
         mysql = NULL;
@@ -170,21 +171,24 @@ void DBPool::onTimer(muduo::Timestamp t)
 {
     // only test
     MutexLockGuard lock(mutex_);
-    for(auto it = conWklist_.begin();i!=conWklist_end();/**/)
+    for (auto it = conWklist_.begin(); it != conWklist_.end(); /**/)
     {
-        DBConnPtr p = it.lock();
-        if (p){
-          it++;
-          if (p->getTime_.microSecondsSinceEpoch() == 0)
-              break;
-          int diff = static_cast<int>(timeDifference(t, p->getTime())); //return second
-          if (diff >= 10)
-          {
-              //TODO debug
-          }
-        }else{
-          //
-          it = conWklist_.erase(it);
+        DBConnPtr p = it->lock();
+        if (p)
+        {
+            ++it;
+            if (p->getTime().microSecondsSinceEpoch() == 0)
+                break;
+            int diff = static_cast<int>(timeDifference(t, p->getTime())); //return second
+            if (diff >= 10)
+            {
+                //TODO debug
+            }
+        }
+        else
+        {
+            //
+            it = conWklist_.erase(it);
         }
     }
 }

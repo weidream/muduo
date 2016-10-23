@@ -110,7 +110,7 @@ class DBConn : boost::noncopyable
 {
 public:
     DBConn(DBPool* pool, MYSQL* mysql)
-    : pool_(pool), mysql_(mysql), connected_(true), getTime_(), holder_(CurrentThread::tid()) {}
+    : pool_(pool), mysql_(mysql), connected_(true), getTime_(), holder_(muduo::CurrentThread::tid()) {}
     ~DBConn()
     {
         assert(mysql_);
@@ -119,7 +119,7 @@ public:
     void setTimeAndHolder()
     {
         getTime_ = muduo::Timestamp::now();
-        holder_ = CurrentThread::tid();
+        holder_ = muduo::CurrentThread::tid();
     }
     void resetTimeAndHolder()
     {
